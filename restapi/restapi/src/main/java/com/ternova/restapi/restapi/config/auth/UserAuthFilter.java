@@ -1,8 +1,8 @@
 package com.ternova.restapi.restapi.config.auth;
 
+import com.ternova.restapi.restapi.context.DataContext;
 import com.ternova.restapi.restapi.models.AuthModelToken;
 import com.ternova.restapi.restapi.utils.CommonsConstant;
-import com.ternova.restapi.restapi.context.DataContext;
 import com.ternova.restapi.restapi.exception.models.Error;
 import com.ternova.restapi.restapi.exception.models.UnauthorizedException;
 import jakarta.servlet.FilterChain;
@@ -42,11 +42,10 @@ public class UserAuthFilter extends OncePerRequestFilter{
 
             String username = request.getHeader(CommonsConstant.APPLICATION_AUTH_HEADER_USER);
             String password = request.getHeader(CommonsConstant.APPLICATION_AUTH_HEADER_PASS);
-            String connect = request.getHeader(CommonsConstant.APPLICATION_AUTH_HEADER_DB);
 
             try {
 
-                AuthModelToken authModelToken = new AuthModelToken(username, password, connect);
+                AuthModelToken authModelToken = new AuthModelToken(username, password);
 
                 logger.info("------ Intentando autenticar el usuario");
                 // Registro de intento de autenticación de usuario.

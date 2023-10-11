@@ -1,46 +1,48 @@
 package com.ternova.restapi.restapi.controller.components;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-import com.ternova.restapi.restapi.config.OpenApiConfig;
-import com.ternova.restapi.restapi.config.database.DataSourceConfig;
-import com.ternova.restapi.restapi.exception.models.BusinessException;
-import com.ternova.restapi.restapi.exception.models.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.util.Objects;
 
 @Service
 public class ConnectToDataSource {
 
-    @Autowired
-    private DataSourceConfig dataSourceConfig;
+    private final Logger logger = LoggerFactory.getLogger(ConnectToDataSource.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(ConnectToDataSource.class);
+    @PersistenceContext(unitName = "ternova1")
+    private EntityManager ternova1EntityManager;
 
-    public void connectToDataSource(String connect){
-        DataSource selectDataSource =  dataSourceConfig.getDataSourceTernova();
-        if(!Objects.isNull(selectDataSource)){
-            try(Connection connection = selectDataSource.getConnection()) {
+    @PersistenceContext(unitName = "ternova2")
+    private EntityManager ternova2EntityManager;
 
-                logger.info("----------- se conecto a la base de datos {}", connect);
-            }catch (Exception e){
-                throw new BusinessException(
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                        new Error(HttpStatus.BAD_REQUEST, "Error al conectar hacia la db: ".concat(connect))
-                );
-            }
-        }else
-            throw new BusinessException(
-                    HttpStatus.BAD_REQUEST.value(),
-                    HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                    new Error(HttpStatus.BAD_REQUEST, "Base de datos desconocida: ".concat(connect))
-            );
+    @PersistenceContext(unitName = "ternova3")
+    private EntityManager ternova3EntityManager;
+
+    @PersistenceContext(unitName = "ternova4")
+    private EntityManager ternova4EntityManager;
+
+    @PersistenceContext(unitName = "ternova5")
+    private EntityManager ternova5EntityManager;
+
+    public EntityManager connectToDataSource(String databaseName){
+        logger.info("base de datos a conectar {}", databaseName);
+        switch (databaseName) {
+            case "ternova1":
+                return this.ternova1EntityManager;
+            case "ternova2":
+                return this.ternova2EntityManager;
+            case "ternova3":
+                return this.ternova3EntityManager;
+            case "ternova4":
+                return this.ternova4EntityManager;
+            case "ternova5":
+                return this.ternova5EntityManager;
+            default:
+                return this.ternova1EntityManager;
+        }
     }
 }

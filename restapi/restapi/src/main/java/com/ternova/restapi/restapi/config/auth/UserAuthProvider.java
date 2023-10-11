@@ -5,13 +5,13 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
-import com.ternova.restapi.restapi.models.AuthModelToken;
-import com.ternova.restapi.restapi.utils.CommonsConstant;
 import com.ternova.restapi.restapi.context.DataContext;
-import com.ternova.restapi.restapi.service.UserValidateService;
+import com.ternova.restapi.restapi.models.AuthModelToken;
+import com.ternova.restapi.restapi.validate.ValidateManualProcess;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,13 +30,10 @@ public class UserAuthProvider {
     @Value("${security.jwt.token.time}")
     private Integer intervalTime;
 
-    private final UserValidateService userValidateService;
+    @Autowired
+    private ValidateManualProcess validateManualProcess;
 
     private static final Logger logger = LoggerFactory.getLogger(UserAuthProvider.class);
-
-    public UserAuthProvider(UserValidateService userValidateService){
-        this.userValidateService = userValidateService;
-    }
 
     @PostConstruct
     protected void init(){
@@ -54,7 +51,6 @@ public class UserAuthProvider {
 
         Gson gson = new Gson();
 
-        DataContext.clear(); // Limpia el contexto de datos.
         logger.info("-------iniciando la creacion de token");
         // Registro de inicio de la creación del token.
         return JWT.create().withIssuer(gson.toJson(values)) // Crea el token con el emisor, fecha de emisión y fecha de vencimiento.
@@ -73,13 +69,9 @@ public class UserAuthProvider {
         Gson gson = new Gson();
         AuthModelToken authModelToken = gson.fromJson(decoded.getIssuer(), AuthModelToken.class);
 
-        String[] split = decoded.getIssuer().split("\\" + CommonsConstant.APPLICATION_PIPE); // Divide el emisor en partes.
-
         logger.info("-------iniciando verificacion de credenciales");
         // Registro de inicio de la verificación de credenciales.
-        userValidateService.verifyCredentials(authModelToken); // Verifica las credenciales del usuario.
-
-        DataContext.setDataStringContext(authModelToken);
+        validateManualProcess.verifyCredentials(authModelToken); // Verifica las credenciales del usuario.
 
         return new UsernamePasswordAuthenticationToken(decoded.getIssuer(), null, Collections.emptyList());
         // Crea y devuelve una autenticación basada en el emisor del token.
@@ -88,7 +80,7 @@ public class UserAuthProvider {
     public Authentication validateCredentials(AuthModelToken authModelToken) {
         logger.info("-------validacion de credenciales");
         // Registro de inicio de la validación de credenciales.
-        AuthModelToken values = userValidateService.verifyCredentials(authModelToken); // Verifica las credenciales del usuario.
+        AuthModelToken values = validateManualProcess.verifyCredentials(authModelToken); // Verifica las credenciales del usuario.
         return new UsernamePasswordAuthenticationToken(values, null, Collections.emptyList());
         // Crea y devuelve una autenticación basada en las credenciales verificadas.
     }

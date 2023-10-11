@@ -1,21 +1,21 @@
 package com.ternova.restapi.restapi.service;
 
 import com.ternova.restapi.restapi.context.DataContext;
+import com.ternova.restapi.restapi.context.MetadataContext;
 import com.ternova.restapi.restapi.controller.components.ConnectToDataSource;
-import com.ternova.restapi.restapi.models.AuthModelToken;
-import com.ternova.restapi.restapi.utils.CommonsConstant;
 import com.ternova.restapi.restapi.exception.models.BusinessException;
 import com.ternova.restapi.restapi.exception.models.Error;
-import com.ternova.restapi.restapi.exception.models.UnauthorizedException;
 import com.ternova.restapi.restapi.models.request.RestApiRequestData;
 import com.ternova.restapi.restapi.models.response.RestApiResponseDataUser;
 import com.ternova.restapi.restapi.service.database.entity.Usuarios;
 import com.ternova.restapi.restapi.service.database.repository.ParametersRepository;
 import com.ternova.restapi.restapi.service.database.repository.UsuariosRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.Objects;
 
 @Service
@@ -30,26 +30,13 @@ public class UserValidateService {
     @Autowired
     private ConnectToDataSource connectToDataSource;
 
-    public AuthModelToken verifyCredentials(AuthModelToken authModelToken){
-
-        connectToDataSource.connectToDataSource(authModelToken.getConnectToDb());
-
-        Object validateOne = parametersRepository.getValueCredential(authModelToken.getUsername());
-        Object validateTwo = parametersRepository.getValueCredential(authModelToken.getPassword());
-
-        if(Objects.isNull(validateOne) || Objects.isNull(validateTwo))
-            throw new UnauthorizedException(new Error(HttpStatus.UNAUTHORIZED,
-                    CommonsConstant.UNAUTHORIZED_CREDENTIALS));
-        else
-            return authModelToken;
-    }
-
     public RestApiResponseDataUser returnUser(RestApiRequestData restApiRequestData){
 
-        connectToDataSource.connectToDataSource(DataContext.getDataStringContext().getConnectToDb());
+        EntityManager em = connectToDataSource.connectToDataSource(MetadataContext.getContextMetadata().getDatabase());
 
         Integer i = Integer.valueOf(restApiRequestData.getIdUsuario());
-        Usuarios u = usuariosRepository.findUser(i);
+        Usuarios u = em.find(Usuarios.class, i);
+        //Usuarios u = usuariosRepository.findUser(i);
 
         if(!Objects.isNull(u)){
             RestApiResponseDataUser data = new RestApiResponseDataUser();
