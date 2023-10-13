@@ -1,5 +1,6 @@
 package com.ternova.restapi.restapi.validate;
 
+import com.ternova.restapi.restapi.context.MetadataContext;
 import com.ternova.restapi.restapi.utils.CommonsConstant;
 import com.ternova.restapi.restapi.utils.MessageEnumValidate;
 import com.ternova.restapi.restapi.utils.NumberUtility;
@@ -7,6 +8,7 @@ import com.ternova.restapi.restapi.exception.models.BusinessException;
 import com.ternova.restapi.restapi.exception.models.Error;
 import jakarta.validation.*;
 import org.hibernate.validator.HibernateValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,9 @@ public class ValidateModels {
 
     @Value("${constrain.validator.payload}")
     private String validatePayload;
+
+    @Autowired
+    private ValidateManualProcess validateManualProcess;
 
     public void validateModel(Object object){
 
@@ -45,6 +50,8 @@ public class ValidateModels {
             if(!Objects.isNull(error.getCode()))
                 throw new BusinessException(HttpStatus.BAD_REQUEST.value(), error.getTitle(), error);
         }
+
+        validateManualProcess.validateVariableDatabase(MetadataContext.getContextMetadata().getDatabase());
     }
 
     private static Validator createValidator(String payload){

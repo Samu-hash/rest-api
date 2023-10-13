@@ -1,46 +1,51 @@
 package com.ternova.restapi.restapi.service;
 
-import com.ternova.restapi.restapi.context.DataContext;
 import com.ternova.restapi.restapi.context.MetadataContext;
-import com.ternova.restapi.restapi.controller.components.ConnectToDataSource;
+import com.ternova.restapi.restapi.service.database.ConnectToDataSource;
 import com.ternova.restapi.restapi.exception.models.BusinessException;
 import com.ternova.restapi.restapi.exception.models.Error;
 import com.ternova.restapi.restapi.models.request.RestApiRequestData;
 import com.ternova.restapi.restapi.models.response.RestApiResponseDataUser;
 import com.ternova.restapi.restapi.service.database.entity.Usuarios;
-import com.ternova.restapi.restapi.service.database.repository.ParametersRepository;
-import com.ternova.restapi.restapi.service.database.repository.UsuariosRepository;
-import jakarta.persistence.EntityManager;
+import com.ternova.restapi.restapi.service.database.repository.db1.UsuariosRepositoryDb1;
+import com.ternova.restapi.restapi.service.database.repository.db2.UsuariosRepositoryDb2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.Objects;
 
 @Service
 public class UserValidateService {
 
     @Autowired
-    private ParametersRepository parametersRepository;
+    private UsuariosRepositoryDb1 ternova1;
 
     @Autowired
-    private UsuariosRepository usuariosRepository;
+    private UsuariosRepositoryDb2 ternova2;
 
     @Autowired
     private ConnectToDataSource connectToDataSource;
 
-    public RestApiResponseDataUser returnUser(RestApiRequestData restApiRequestData){
+    public RestApiResponseDataUser returnUser(RestApiRequestData restApiRequestData) {
 
-        EntityManager em = connectToDataSource.connectToDataSource(MetadataContext.getContextMetadata().getDatabase());
+        Integer i = connectToDataSource.connectToDataSource(
+                MetadataContext.getContextMetadata().getDatabase());
 
-        Integer i = Integer.valueOf(restApiRequestData.getIdUsuario());
-        Usuarios u = em.find(Usuarios.class, i);
-        //Usuarios u = usuariosRepository.findUser(i);
+        Usuarios u = null;
+        switch (i){
+            case 1:
+                u = ternova1.findUser(Integer.valueOf(restApiRequestData.getIdUsuario()));
+                break;
+            case 2:
+                u = ternova2.findUser(Integer.valueOf(restApiRequestData.getIdUsuario()));
+                break;
+        }
+
 
         if(!Objects.isNull(u)){
             RestApiResponseDataUser data = new RestApiResponseDataUser();
-            data.setIdUsuario(u.getIdUsuario());
+            data.setIdUsuario(String.valueOf(u.getIdUsuario()));
             data.setNombres(u.getNombres());
             data.setApellidos(u.getApellidos());
             data.setFechaNacimiento(u.getFechaNacimiento());

@@ -27,6 +27,6 @@ public class CommonsConstant {
 
     public static final String APPLICATION_AUTH_HEADER_DB = "db-auth";
 
-    public static final List<String> LIST_DB = Arrays.asList("ternova1", "ternova2", "ternova3", "ternova4", "ternova5");
+    public static final List<String> LIST_DB = Arrays.asList("ternova1", "ternova2");
 
 }
